@@ -26,4 +26,5 @@ The complexity of the problem required the application of different mathematical
 
 The models generated release profiles consistent with experimental data from the literature, highlighting the different characteristics of each system. The graph below compares the simulated release rate over 21 days.
 
-<img width="1023" height="525" alt="liberacao_combinada" src="https://github.com/user-attachments/assets/335ab841-e286-46a6-99cf-f609c94d364d" style="padding-top: 20px;" />
+<img width="1023" height="525" alt="liberacao_combinada" src="https://github.com/user-attachments/assets/d5c73d6a-f85b-4220-a635-597fab1019ac" style="padding-top: 20px;" />
+
