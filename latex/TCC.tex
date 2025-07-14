@@ -1,0 +1,80 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The following comments were written in Portuguese, because this 
+% template applies only for School of Technology at University 
+% of Campinas, Brazil.
+%
+% Este é um modelo LaTeX para monografias de Trabalhos de Conclusão 
+% de Curso (TCC) na graduação da Faculdade de Engenharia Química (FEQ)
+% da Universidade Estadual de Campinas (Unicamp) 
+%
+% Esse modelo e seu respectivo arquivo de classe de documento 
+% foram adaptados do modelo de teses e dissertações do 
+% Instituto de Computação e da Faculdade de Tecnologia da Unicamp, modificados incialmente por André Gradvohl. Segue o link do template original: <https://www.overleaf.com/latex/templates/template-for-graduation-work-masters-dissertation-or-doctoral-thesis-for-school-of-technology-unicamp/rhznqbkjvpcr>.
+%
+% Para dúvidas e sugestões, entre em contato comigo através do e-mail abaixo:
+%
+% Autor: Nathan Barros de Souza
+% E-mail: n264179@dac.unicamp.br
+% Data: 12/08/2022
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Para a versão final do texto, acrescente a palavra "Final".
+\documentclass[Portugues,Final]{TCC-FEQ}
+%\documentclass[Ingles,Final]{TCC-FEQ}
+%\documentclass[Espanhol,Final]{TCC-FEQ}
+%
+% Se o seu documento exigir uma folha de concordância da empresa, o que ocorre quando o aluno faz o TCC em algum tema do estágio, ou algum tema oferecido por uma empresa, substitua a opção "SemConcordancia" por "ComConcordancia"
+%\documentclass[Portugues,Final,ComConcordancia]{TCC-FEQ}
+%
+% Para uma compilação mais rápida, utilize a opção "Draft", em
+% letras maiúsculas como a seguir. 
+
+%\documentclass[Portugues,Draft]{TCC-FEQ}
+
+% Caso necessário, adicione também a opção "noFig". Essa opção 
+% deixa de mostrar as figuras e, portanto, acelera mais ainda
+% a compilação.
+%\documentclass[Portugues,Draft,noFig]{TCC-FEQ}
+
+%Adicione seu arquivo com as referências bibliográficas
+\addbibresource{bibliografia.bib}
+
+\input{packages}
+
+\input{commands}
+
+\begin{document}
+
+\include{preenchimento/formulario}
+
+\inicializacao
+
+% Tipo de modelo (TCC)
+\bsi
+
+% Este comando deve ficar aqui:
+\paginasiniciais
+
+\input{preenchimento/pretextual}
+
+% E a linha a seguir deve ficar bem aqui. Não mude.
+\fimdaspaginasiniciais
+
+\input{preenchimento/textual}
+
+% Comandos para incluir as referências bibliográficas
+% Define espaçamento simples em cada referência
+\begin{singlespacing}
+
+% Adiciona uma linha em branco entre duas referências
+\setlength\bibitemsep{10pt}   
+%
+% Adiciona as referências bibliográficas.
+\nocite{*}
+\printbibliography[heading=bibintoc, title={Referências bibliográficas}]
+\end{singlespacing}
+
+\include{preenchimento/postextual_apendices}
+
+\end{document}

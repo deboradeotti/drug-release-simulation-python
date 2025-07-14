@@ -1,0 +1,402 @@
+\chapter{Código desenvolvido}
+
+\section{Modelagem para a difusão no adesivo transdérmico}
+\begin{verbatim}
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from scipy.sparse import diags
+from scipy.sparse.linalg import spsolve
+
+# Dados
+L1 = 0.004  # Espessura da matriz (cm)
+D1 = 0.0000005184 / 900000  # Coeficiente de difusão (cm^2/h)
+C10 = 9375  # Concentração inicial de EE (ug/cm^3)
+Km = 1  # Coeficiente de partição matriz-pele (s.u.)
+V1 = 0.08  # Volume total do adesivo (cm³)
+
+# Número de pontos
+Nx1 = 100  # Número de pontos espaciais
+
+# Variáveis
+T1 = 168  # Tempo total coberto na simulação (h)
+dx1 = L1 / Nx1  # Passo espacial
+
+# Passo temporal
+dt = 0.1
+
+# Concentrações iniciais
+C1 = np.zeros((Nx1, int(T1/dt) + 1))
+C1[:, 0] = C10
+
+# Quantidade total de fármaco disponível no adesivo
+total_farmaco_disponivel_adesivo = C10 * V1
+
+# Coeficientes para o método de Crank-Nicolson
+alpha1 = D1 * dt / (2 * dx1**2)
+
+# Matrizes tridiagonais
+A1 = diags([-alpha1, 1 + 2*alpha1, -alpha1], [-1, 0, 1], \
+            shape=(Nx1-2, Nx1-2))
+A1 = A1.tocsc()  # Conversão para o formato CSC
+B1 = diags([alpha1, 1 - 2*alpha1, alpha1], [-1, 0, 1], \
+            shape=(Nx1-2, Nx1-2))
+
+# Método de Crank-Nicolson
+total_released = 0
+for n in range(0, int(T1/dt)):
+
+    # Resolver para C1
+    b1 = B1 @ C1[1:-1, n]
+    C1[1:-1, n + 1] = spsolve(A1, b1)
+    
+    # Condição de contorno de fluxo zero para x=0
+    C1[0, n + 1] = C1[1, n + 1]
+
+    # Condição de contorno utilizando o coeficiente 
+    # de partição para x=L1
+    C1[-1, n + 1] = Km * C1[-2, n + 1]
+
+    # Calcular a quantidade total de fármaco liberado a cada dia
+    if (n + 1) % int(24/dt) == 0:
+        daily_released = np.sum(C1[:, n + 1] - \
+                        C1[:, n + 1 - int(24/dt)]) * dx1
+        if daily_released > 20:
+            # Parar a liberação de fármaco para o restante do dia
+            C1[:, n + 1] = C1[:, n + 1 - int(24/dt)]
+        total_released += daily_released
+
+        # Verificar se a quantidade total de fármaco liberado 
+        # ultrapassa a quantidade disponível
+        if total_released > total_farmaco_disponivel_adesivo:
+            print("A quantidade total de fármaco liberado" 
+                "ultrapassa a quantidade disponível no adesivo.")
+            C1[:, n + 1:] = 0
+            break
+
+# Converter tempo para dias
+time_days = np.linspace(0, 7, int(T1/dt) + 1)
+
+# Conversão de cm para µm
+space_um_vehicle = np.linspace(0, L1 * 1e4, Nx1)
+
+# Selecionar pontos temporais específicos para exibir na tabela
+time_points = [int(24/dt * day) for day in range(0, 8)]
+time_labels = [f't={day:.2f} dias' for day in range(0, 8)]
+
+# Criar DataFrames para armazenar os resultados
+results_vehicle = pd.DataFrame(C1[:, time_points], \
+                                columns=time_labels)
+results_vehicle.index = np.linspace(0, L1, Nx1)
+
+# Exibir as tabelas
+from IPython.display import display
+print(
+    "Perfis de Concentração na Camada Adesiva em Pontos" 
+    "Temporais Selecionados:")
+display(results_vehicle)
+
+# Plotar o perfil de difusão na matriz
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
+# Plot principal
+fig, ax = plt.subplots(figsize=(14, 8))
+for i, n in enumerate(time_points):
+    ax.plot(space_um_vehicle, C1[:, n], \
+            label=f'Dia {int(time_days[n])}')
+
+# Configurações do plot principal
+ax.set_xlabel('Posição (µm)')
+ax.set_ylabel('Concentração (µg/cm³)')
+ax.legend()
+ax.set_title('Difusão de EE na Camada Adesiva')
+
+# Plot com zoom
+axins = inset_axes(ax, width="40%", height="40%", \
+                    loc="upper right")
+for i, n in enumerate(time_points):
+    axins.plot(space_um_vehicle, C1[:, n])
+
+# Definindo os limites da região ampliada
+x1, x2 = 0, 1
+y1, y2 = 8800, 9400
+axins.set_xlim(x1, x2)
+axins.set_ylim(y1, y2)
+
+plt.show()
+\end{verbatim}
+
+\section{Modelagem para a difusão no anel vaginal}
+\begin{verbatim}
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from scipy.sparse import diags
+from scipy.sparse.linalg import spsolve
+
+# Dados
+L2 = 0.4  # Espessura da matriz (cm)
+D2 = 0.00000792/10 # Coeficiente de difusão na matriz (cm^2/h)
+C20 = 25.33 # Concentração inicial de EE na matriz (ug/cm^3)
+V2 = 106.58  # Volume total do adesivo (cm³)
+
+# Número de pontos
+Nx2 = 100  # Número de pontos espaciais na matriz
+
+# Variáveis
+T2 = 504  # Tempo total coberto na simulação (h)
+dx2 = L2 / Nx2  # Passo espacial para a matriz
+
+# Passo temporal
+dt2 = 0.1
+
+# Concentrações iniciais
+C2 = np.zeros((Nx2, int(T2/dt2) + 1))
+C2[:, 0] = C20
+
+# Quantidade total de fármaco disponível no anel
+total_farmaco_disponivel_anel = C20 * V2
+
+# Coeficientes para o método de Crank-Nicolson
+alpha = D2 * dt2 / (2 * dx2**2)
+
+# Matrizes tridiagonais
+A2 = diags([-alpha, 1 + 2*alpha, -alpha], [-1, 0, 1], \
+        shape=(Nx2-2, Nx2-2))
+A2 = A2.tocsc()
+B2 = diags([alpha, 1 - 2*alpha, alpha], [-1, 0, 1], \
+        shape=(Nx2-2, Nx2-2))
+
+# Método de Crank-Nicolson
+for n in range(0, int(T2/dt2)):
+    if n % 100 == 0:
+        print(f"Iteração {n} de {int(T2/dt2)}")
+    # Resolver para C
+    b2 = B2 @ C2[1:-1, n]
+    C2[1:-1, n + 1] = spsolve(A2, b2)
+
+    # Condição de contorno de fluxo zero para x=0
+    C2[0, n + 1] = C2[1, n + 1]
+
+    # Condição de contorno para x=L
+    C2[-1, n + 1] = 0
+
+    # Calcular a quantidade total de fármaco liberado a cada dia
+    if (n + 1) % int(24/dt) == 0:
+        daily_released = np.sum(C2[:, n + 1] - \
+                        C2[:, n + 1 - int(24/dt)]) * dx2
+        if daily_released > 15:
+            # Parar a liberação de fármaco para o restante do dia
+            C2[:, n + 1] = C2[:, n + 1 - int(24/dt)]
+        total_released += daily_released
+
+        # Verificar se a quantidade total de fármaco liberado 
+        # ultrapassa a quantidade disponível
+        if total_released > total_farmaco_disponivel_anel:
+            print("A quantidade total de fármaco liberado" 
+                "ultrapassa a quantidade disponível no anel.")
+            C2[:, n + 1:] = 0
+            break
+
+# Converter tempo para semanas
+num_weeks = T2 // (24 * 7)
+time_weeks = np.linspace(0, num_weeks, int(T2/dt2) + 1)
+
+# Selecionar pontos temporais específicos para exibir na tabela
+time_points = [int((7 * 24) / dt2) * \
+            week for week in range(num_weeks + 1)]
+time_labels = [f'Semana {week}' for week in range(num_weeks + 1)]
+
+# Criar DataFrames para armazenar os resultados
+results_vehicle = pd.DataFrame(C2[:, time_points], \
+                        columns=time_labels)
+results_vehicle.index = np.linspace(0, L2, Nx2)
+
+# Exibir as tabelas
+from IPython.display import display
+print("Perfis de Concentração na Camada Polimérica" 
+    "em Pontos Temporais Selecionados:")
+display(results_vehicle)
+
+# Plotar o perfil de difusão
+plt.figure(figsize=(12, 6))
+for tp in time_points:
+    plt.plot(np.linspace(0, L2, Nx2), C2[:, tp], \
+            label=f'{time_labels[time_points.index(tp)]}')
+plt.xlabel('Posição (cm)')
+plt.ylabel('Concentração (ug/cm^3)')
+plt.legend()
+plt.title('Difusão de EE na Camada Polimérica')
+plt.show()
+\end{verbatim}
+
+\section{Modelagem para a liberação a partir do COC}
+\begin{verbatim}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Dados
+Cs = 18.7  # Solubilidade máxima do EE no fluido gastrointestinal (ug/cm^3)
+kd = 0.02  # Constante de dissolução (1/h)
+T3 = 24  # Tempo total coberto na simulação (h)
+dt = 0.1  # Passo temporal (h)
+C_max = 15  # Concentração máxima permitida (ug/cm^3)
+
+# Função que representa a EDO
+def dCdt(Cd, t):
+    return kd * (Cs - Cd)
+
+# Inicialização
+t_values = np.arange(0, T3 + dt, dt)
+C3 = np.zeros(len(t_values))
+C3[0] = 0  # Concentração inicial de EE no fluido gastrointestinal
+
+# Método de Runge-Kutta de quarta ordem (RK4) com limite de concentração
+for i in range(1, len(t_values)):
+    t = t_values[i-1]
+    Cd = C3[i-1]
+
+    k1 = dt * dCdt(Cd, t)
+    k2 = dt * dCdt(Cd + 0.5 * k1, t + 0.5 * dt)
+    k3 = dt * dCdt(Cd + 0.5 * k2, t + 0.5 * dt)
+    k4 = dt * dCdt(Cd + k3, t + dt)
+
+    # Calcular a nova concentração e impor o limite
+    C3[i] = Cd + (k1 + 2*k2 + 2*k3 + k4) / 6
+    if C3[i] > C_max:
+        C3[i] = C_max
+
+# Plotar os resultados
+plt.figure(figsize=(12, 6))
+plt.plot(t_values, C3, label='Concentração liberada')
+plt.xlabel('Tempo (h)')
+plt.ylabel('Concentração (ug/cm^3)')
+plt.legend()
+plt.title('Liberação de EE a partir da Pílula')
+plt.show()
+\end{verbatim}
+
+\section{Concentração liberada em função do tempo para cada matriz}
+
+\begin{verbatim}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Cálulo das taxas para cada matriz
+
+def calculate_release_rate(C, dx=None):
+    release_rate = np.zeros(C.shape[1]) if C.ndim == 2 else \
+                    np.zeros(len(C))
+    for n in range(1, C.shape[1] if C.ndim == 2 else len(C)):
+        if C.ndim == 2: # Adesivo e anel
+            # Usar a média da concentração ao longo da matriz 
+            # para cada ponto temporal
+            avg_concentration = np.mean(C[:, n] - C[:, n - 1])
+            rate = avg_concentration
+        else: # COC
+            dC = C[n] - C[n - 1]
+            rate = dC
+        release_rate[n] = rate
+    return np.abs(release_rate)
+
+# Calculando a taxa
+release_rate_patch = calculate_release_rate(C1, dx1)
+release_rate_ring = calculate_release_rate(C2, dx2)
+release_rate_pill = calculate_release_rate(C3)
+
+# Criando subplots para plotar cada matriz separadamente
+fig, axs = plt.subplots(1, 3, figsize=(18, 6))
+
+# Plotando resultados para o adesivo
+axs[0].plot(np.linspace(0, T1, len(release_rate_patch)), \
+            release_rate_patch, label='Taxa de Liberação - Adesivo')
+axs[0].set_xlabel('Tempo (h)')
+axs[0].set_ylabel('Taxa de Liberação (ug/mL)')
+axs[0].set_title('Adesivo Transdérmico')
+axs[0].legend()
+
+# Plotando resultados para o anel vaginal
+axs[1].plot(np.linspace(0, T2, len(release_rate_ring)), \
+            release_rate_ring, label='Taxa de Liberação - Anel')
+axs[1].set_xlabel('Tempo (h)')
+axs[1].set_ylabel('Taxa de Liberação (ug/mL)')
+axs[1].set_title('Anel Vaginal')
+axs[1].set_xlim(0, 1)  # Recorte de tempo para a primeira hora
+axs[1].legend()
+
+# Plotando resultados para o COC
+axs[2].plot(np.linspace(0, T3, len(release_rate_pill)), \
+            release_rate_pill, label='Taxa de Liberação - COC')
+axs[2].set_xlabel('Tempo (h)')
+axs[2].set_ylabel('Taxa de Liberação (ug/mL)')
+axs[2].set_title('Comprimido Oral Combinado')
+axs[2].legend()
+
+# Adicionar título unificado
+fig.suptitle('Taxa de Liberação de Etinilestradiol', fontsize=16)
+
+# Ajustar layout
+plt.tight_layout()
+plt.show()
+
+# Plotando as matrizes juntas e simulando reposição
+
+# Parâmetros
+dt = 0.1  # Passo temporal (h)
+T_total = 21 * 24  # Tempo total de 21 dias em horas
+num_days = 21  # Número total de dias
+
+# Função para empilhar as curvas simulando a reposição
+def stack_curves(data, repeat_interval, total_time, dt):
+    num_repeats = int(total_time / repeat_interval)
+    stacked_data = np.zeros(int(total_time / dt))
+    for i in range(num_repeats):
+        start_idx = int(i * repeat_interval / dt)
+        end_idx = start_idx + len(data)
+        stacked_data[start_idx:end_idx] = data
+    return stacked_data
+
+# Empilhar as curvas
+release_rate_pill_stacked = \
+    stack_curves(release_rate_pill[:int(24/dt)],24, T_total, dt)
+release_rate_patch_stacked = \
+    stack_curves(release_rate_patch[:int(168/dt)], 168, T_total, dt)
+release_rate_ring_stacked = \
+    stack_curves(release_rate_ring[:int(504/dt)], 504, T_total, dt)
+
+# Convertendo as taxas de liberação de µg/h para pg/h
+release_rate_pill_stacked *= 1e6
+release_rate_patch_stacked *= 1e6
+release_rate_ring_stacked *= 1e6
+
+# Redução do número de pontos no eixo x 
+# para evitar erro de tamanho da imagem
+num_points = 1000
+x_values = np.linspace(0, num_days, num_points)
+release_rate_pill_reduced = np.interp(x_values, \
+    np.linspace(0, num_days, len(release_rate_pill_stacked)), \
+    release_rate_pill_stacked)
+release_rate_patch_reduced = np.interp(x_values, \
+    np.linspace(0, num_days, len(release_rate_patch_stacked)), \
+    release_rate_patch_stacked)
+release_rate_ring_reduced = np.interp(x_values, np.linspace(0, num_days, \
+len(release_rate_ring_stacked)), release_rate_ring_stacked)
+
+# Definindo cores personalizadas
+color_ring = '#1f77b4'
+color_patch = '#ff7f0e'
+color_pill = '#2ca02c'
+
+# Plotar os resultados
+plt.figure(figsize=(12, 6))
+plt.plot(x_values, release_rate_pill_reduced, label='COC', color=color_pill)
+plt.plot(x_values, release_rate_patch_reduced, label='Adesivo', \
+            color=color_patch)
+plt.plot(x_values, release_rate_ring_reduced, label='Anel Vaginal', \
+            color=color_ring)
+plt.xlabel('Tempo (dias)')
+plt.ylabel('Concentração liberada (pg/h)')
+plt.title('Liberação de etinilestradiol ao longo do tempo')
+plt.legend()
+plt.show()
+\end{verbatim}

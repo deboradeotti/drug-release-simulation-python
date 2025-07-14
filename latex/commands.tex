@@ -1,0 +1,74 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Os comandos abaixo previnem que uma figura ou tabela ('floats') 
+% deixem uma determinada seção, capítulo etc.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\let\Oldchapter\chapter
+\renewcommand{\chapter}{\FloatBarrier\Oldchapter}
+
+\let\Oldsection\section
+\renewcommand{\section}{\FloatBarrier\Oldsection}
+
+\let\Oldsubsection\subsection
+\renewcommand{\subsection}{\FloatBarrier\Oldsubsection}
+
+\let\Oldsubsubsection\subsubsection
+\renewcommand{\subsubsection}{\FloatBarrier\Oldsubsubsection}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Configurações de aparência do PDF final
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{blue}{RGB}{41,5,195}   % alterando o aspecto da cor azul
+\makeatletter                       % informações do PDF
+\hypersetup{
+		pdftitle={\@titulo},
+		colorlinks=true,       		% false: boxed links; true: colored links
+    	linkcolor=blue,          	% color of internal links
+    	citecolor=blue,        		% color of links to bibliography
+    	filecolor=magenta,      	% color of file links
+		urlcolor=blue,
+		bookmarksdepth=4
+}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Isto redefine funções trigonométricas para português
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\providecommand{\sin}{} \renewcommand{\sin}{\hspace{2pt}\mathrm{sen}}
+\providecommand{\tan}{} \renewcommand{\tan}{\hspace{2pt}\mathrm{tg}}
+\providecommand{\arcsin}{} \renewcommand{\arcsin}{\hspace{2pt}\mathrm{arcsen}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Isto adiciona um espaço entre o texto e a nota de rodapé.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\addtolength{\skip\footins}{2pc plus 5pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Acredito que isto faça com que páginas em branco não sejam enumeradas e não entrem na enumeração do sumário.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Isso foi necessário para remover o espaçamento que aparecia após uma equação, mas nunca antes dela. Dessa forma, o texto ficava mal formatado.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\xpatchcmd{\NCC@ignorepar}{%
+    \abovedisplayskip\abovedisplayshortskip}{%
+    \abovedisplayskip\abovedisplayshortskip%
+    \belowdisplayskip\belowdisplayshortskip}
+    {}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Corrige a quebra de linha ao utilizar o comando \texttt
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\let\oldtexttt\texttt
+\renewcommand{\texttt}[1]{\oldtexttt{\StrSubstitute[0]{#1}{.}{.\allowbreak}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
