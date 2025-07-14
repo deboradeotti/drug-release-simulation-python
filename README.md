@@ -4,7 +4,9 @@
 
 This project, developed as a Final Undergraduate Thesis in Chemical Engineering at Unicamp, consists of a Python-based computational model to simulate and analyze the controlled release of the drug ethinylestradiol from three different matrices: the transdermal patch, the vaginal ring, and the combined oral contraceptive (COC).
 
-The goal was to compare the release profiles of each system and analyze their efficacy and safety through the application of engineering and programming principles.
+### Motivation
+
+This project was motivated by the historical gap in scientific research, which for centuries has excluded or neglected the specificities of women's health. This work seeks to apply engineering tools — specifically computational modeling — to deepen the understanding of contraceptive methods, contributing to fill this gap and promote discussion about better health outcomes for women.
 
 ## Technical Solution
 
