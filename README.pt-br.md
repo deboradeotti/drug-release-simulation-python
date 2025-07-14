@@ -4,7 +4,9 @@
 
 Este projeto, desenvolvido como Trabalho de Conclusão de Curso em Engenharia Química na Unicamp, consiste na criação de um modelo computacional em Python para simular e analisar a liberação controlada do fármaco etinilestradiol a partir de três diferentes matrizes: o adesivo transdérmico, o anel vaginal e o contraceptivo oral combinado (COC).
 
-O objetivo foi comparar os perfis de liberação de cada sistema e analisar sua eficácia e segurança através da engenharia e da programação.
+### Motivação
+
+Este projeto foi motivado pela lacuna histórica na pesquisa científica, que por séculos excluiu ou negligenciou as particularidades da saúde feminina. O trabalho busca aplicar as ferramentas da engenharia — especificamente a modelagem computacional — para aprofundar o conhecimento métodos contraceptivos, contribuindo para preencher essa lacuna e incentivar a promoção de melhores condições de saúde para as mulheres.
 
 ## Solução Técnica
 
